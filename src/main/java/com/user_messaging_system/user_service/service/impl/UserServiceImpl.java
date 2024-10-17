@@ -3,8 +3,8 @@ package com.user_messaging_system.user_service.service.impl;
 import com.user_messaging_system.core_library.exception.UserNotFoundException;
 import com.user_messaging_system.user_service.api.input.UserInput;
 import com.user_messaging_system.user_service.api.output.UserCreateOutput;
-import com.user_messaging_system.user_service.api.output.UserOutput;
 import com.user_messaging_system.user_service.common.enumerator.Role;
+import com.user_messaging_system.user_service.dto.UserDTO;
 import com.user_messaging_system.user_service.mapper.UserMapper;
 import com.user_messaging_system.user_service.model.User;
 import com.user_messaging_system.user_service.repository.RoleRepository;
@@ -27,15 +27,20 @@ public class UserServiceImpl implements UserService {
         this.roleRepository = roleRepository;
     }
 
-    public UserOutput getUserById(String id){
+    public List<UserDTO> getSenderAndReceiverByIds(String senderId, String receiverId){
+        List<User> senderAndReceiverUsers = userRepository.findAllById(List.of(senderId, receiverId));
+        return UserMapper.INSTANCE.userListToUserDTOList(senderAndReceiverUsers);
+    }
+
+    public UserDTO getUserById(String id){
         User user = findUserById(id);
-        return UserMapper.INSTANCE.userToUserOutput(user);
+        return UserMapper.INSTANCE.userToUserDTO(user);
     }
 
     @Override
-    public UserOutput getUserByEmail(String email) {
+    public UserDTO getUserByEmail(String email) {
         User user = findUserByEmail(email);
-        return UserMapper.INSTANCE.userToUserOutput(user);
+        return UserMapper.INSTANCE.userToUserDTO(user);
     }
 
     public UserCreateOutput createUser(UserInput userInput){
@@ -48,11 +53,11 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserOutput updateUserById(String id, UserInput userInput) {
+    public UserDTO updateUserById(String id, UserInput userInput) {
         checkUserIsExistByIdForUpdate(userInput.email(), id);
         User user = UserMapper.INSTANCE.userInputToUserForUpdate(userInput);
         userRepository.save(user);
-        return UserMapper.INSTANCE.userToUserOutput(user);
+        return UserMapper.INSTANCE.userToUserDTO(user);
     }
 
     //:TODO: Kullanicinin tum verilerini silebilecek durumu ele aldiktan sonra silme islemini gerceklestir.
