@@ -6,6 +6,5 @@ public interface UserBaseOutput {
     String email();
     String name();
     String lastName();
-    String password();
     List<String> roles();
 }
