@@ -26,4 +26,16 @@ public abstract class BaseModel {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    public String getId() {
+        return id;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }
