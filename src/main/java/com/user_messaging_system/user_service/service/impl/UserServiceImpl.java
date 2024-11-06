@@ -1,8 +1,11 @@
 package com.user_messaging_system.user_service.service.impl;
 
-import com.user_messaging_system.core_library.exception.UserNotFoundException;
-import com.user_messaging_system.user_service.api.input.UserInput;
-import com.user_messaging_system.user_service.api.output.UserCreateOutput;
+import com.user_messaging_system.core_library.exception.UnauthorizedException;
+import com.user_messaging_system.user_service.exception.UserNotFoundException;
+import com.user_messaging_system.core_library.service.JWTService;
+import com.user_messaging_system.user_service.api.input.UserRegisterInput;
+import com.user_messaging_system.user_service.api.input.UserUpdateInput;
+import com.user_messaging_system.user_service.api.output.UserRegisterOutput;
 import com.user_messaging_system.user_service.common.enumerator.Role;
 import com.user_messaging_system.user_service.dto.UserDTO;
 import com.user_messaging_system.user_service.mapper.UserMapper;
@@ -18,20 +21,31 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final JWTServiceImpl jwtService;
+    private final JWTService jwtService;
     private final RoleRepository roleRepository;
 
-    public UserServiceImpl(UserRepository userRepository, JWTServiceImpl jwtService, RoleRepository roleRepository) {
+    public UserServiceImpl(UserRepository userRepository, JWTService jwtService, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.roleRepository = roleRepository;
     }
 
-    public List<UserDTO> getSenderAndReceiverByIds(String senderId, String receiverId){
+    @Override
+    public UserDTO getCurrentUser(String jwtToken){
+        String email = tokenValidateAndExtractMail(jwtToken);
+        return getUserByEmail(email);
+    }
+
+    @Override
+    public List<UserDTO> getSenderAndReceiverByIds(String jwtToken, String senderId, String receiverId){
+        String email = jwtService.extractEmail(jwtToken);
+        User user = findUserByEmail(email);
+        validateUserIsAuthorizedForConversation(user.getId(), senderId, receiverId);
         List<User> senderAndReceiverUsers = userRepository.findAllById(List.of(senderId, receiverId));
         return UserMapper.INSTANCE.userListToUserDTOList(senderAndReceiverUsers);
     }
 
+    @Override
     public UserDTO getUserById(String id){
         User user = findUserById(id);
         return UserMapper.INSTANCE.userToUserDTO(user);
@@ -43,27 +57,28 @@ public class UserServiceImpl implements UserService {
         return UserMapper.INSTANCE.userToUserDTO(user);
     }
 
-    public UserCreateOutput createUser(UserInput userInput){
-        checkUserIsExistByEmail(userInput.email());
-        User user = prepareUserForCreate(userInput);
+    @Override
+    public UserRegisterOutput createUser(UserRegisterInput userRegisterInput){
+        validateUserIsNotExistByEmail(userRegisterInput.email());
+        User user = prepareUserForCreate(userRegisterInput);
+        user = userRepository.save(user);
         String accessToken = generateTokenForNewUser(user);
-        userRepository.save(user);
         return UserMapper.INSTANCE.userToUserOutputWithAccessToken(user, accessToken);
     }
 
-
     @Override
-    public UserDTO updateUserById(String id, UserInput userInput) {
-        checkUserIsExistByIdForUpdate(userInput.email(), id);
-        User user = UserMapper.INSTANCE.userInputToUserForUpdate(userInput);
-        userRepository.save(user);
-        return UserMapper.INSTANCE.userToUserDTO(user);
+    public UserDTO updateCurrentUser(String jwtToken, UserUpdateInput userUpdateInput){
+        String currentUserEmail = tokenValidateAndExtractMail(jwtToken);
+        User existingUser = findUserByEmail(currentUserEmail);
+        validateUserIsNotExistByEmailAndId(userUpdateInput.email(), existingUser.getId());
+        existingUser = UserMapper.INSTANCE.updateAndReturnUser(userUpdateInput, existingUser);
+        return UserMapper.INSTANCE.userToUserDTO(existingUser);
     }
 
-    //:TODO: Kullanicinin tum verilerini silebilecek durumu ele aldiktan sonra silme islemini gerceklestir.
-    //:TODO: Silme islemi parola ile gerceklessin.
-    public void deleteUserById(String id){
-        User user = findUserById(id);
+    @Override
+    public void deleteCurrentUser(String jwtToken){
+        String email = tokenValidateAndExtractMail(jwtToken);
+        User user = findUserByEmail(email);
         userRepository.delete(user);
     }
 
@@ -77,20 +92,20 @@ public class UserServiceImpl implements UserService {
                 orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
-    private void checkUserIsExistByEmail(String email){
+    private void validateUserIsNotExistByEmail(String email){
         if(userRepository.existsByEmail(email)){
             throw new EntityExistsException("This email address (" + email + ") is already in use.");
         }
     }
 
-    private void checkUserIsExistByIdForUpdate(String email, String id){
-        if(!userRepository.existsByEmailAndIdNot(email, id)){
+    private void validateUserIsNotExistByEmailAndId(String email, String id){
+        if(userRepository.existsByEmailAndIdNot(email, id)){
             throw new EntityExistsException("This email address (" + email + ") is already in use.");
         }
     }
 
     private String generateTokenForNewUser(User user){
-        return jwtService.generateJwtToken(user.getEmail(), List.of(Role.USER.getValue()));
+        return jwtService.generateJwtToken(user.getEmail(), user.getId(), List.of(Role.USER.getValue()));
     }
 
     private com.user_messaging_system.user_service.model.Role getRoleForUser(){
@@ -98,10 +113,23 @@ public class UserServiceImpl implements UserService {
                 orElseThrow(() -> new UserNotFoundException("Role not found"));
     }
 
-    private User prepareUserForCreate(UserInput userInput){
-        User user = UserMapper.INSTANCE.userInputToUser(userInput);
-
+    private User prepareUserForCreate(UserRegisterInput userRegisterInput){
+        User user = UserMapper.INSTANCE.userRegisterInputToUser(userRegisterInput);
         user.getRoles().add(getRoleForUser());
         return user;
+    }
+
+    private String tokenValidateAndExtractMail(String token){
+        jwtService.validateToken(token);
+        return jwtService.extractEmail(token);
+    }
+
+    //TODO: throw new ile firlatilan hatayi duzelt simdilik UserNotFoundException olarak biraktim.
+    private void validateUserIsAuthorizedForConversation(String currentUserId, String senderId, String receiverId){
+        if(currentUserId.equals(senderId) || currentUserId.equals(receiverId)){
+            return;
+        }else{
+            throw new UnauthorizedException("Current user is not authorized to access this conversation.");
+        }
     }
 }
