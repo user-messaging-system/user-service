@@ -8,8 +8,5 @@ public record UserUpdateInput(
         @Nullable
         String lastName,
         @Nullable
-        String email,
-        @Nullable
-        String password
-) {
-}
+        String email
+) {}
