@@ -12,9 +12,10 @@ import com.user_messaging_system.user_service.model.Role;
 import com.user_messaging_system.user_service.model.User;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -43,6 +44,7 @@ public interface UserMapper {
     List<UserDTO> userListToUserDTOList(List<User> userList);
 
     List<UserGetCurrentOutput> userDtoListToUserOutputList(List<UserDTO> userDTOList);
+
     List<UserGetOutput> userDtoListToUserGetOutputList(List<UserDTO> userDTOList);
 
     UserGetCurrentOutput userDtoToUserOutput(UserDTO userDTO);
@@ -56,9 +58,7 @@ public interface UserMapper {
 
     @Named("mapRoles")
     default List<String> mapRoles(List<Role> roles) {
-        return roles.stream()
-                .map(Role::getName)
-                .collect(Collectors.toList());
+        return roles.stream().map(Role::getName).toList();
     }
 
     default String mapAccessToken(String accessToken) {
