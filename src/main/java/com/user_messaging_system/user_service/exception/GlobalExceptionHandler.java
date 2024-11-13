@@ -10,9 +10,25 @@ import org.springframework.web.context.request.WebRequest;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex, WebRequest request){
-        ErrorResponse errorResponse =
-                new ErrorResponse(ex.getMessage(), ex.getCause().getMessage(), HttpStatus.UNAUTHORIZED.value(), request.getDescription(false));
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException exception, WebRequest request){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse.Builder()
+                .message(exception.getMessage())
+                .error(exception.getCause().getMessage())
+                .status(HttpStatus.NOT_FOUND.value())
+                .path(request.getDescription(false)).build()
+            );
+    }
+
+    @ExceptionHandler(EmailAlreadyExistException.class)
+    public ResponseEntity<ErrorResponse> handleEmailAlreadyExistException(EmailAlreadyExistException exception, WebRequest request){
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ErrorResponse.Builder()
+                .message(exception.getMessage())
+                .error(exception.getCause().getMessage())
+                .status(HttpStatus.NOT_FOUND.value())
+                .path(request.getDescription(false))
+                .build()
+            );
     }
 }
