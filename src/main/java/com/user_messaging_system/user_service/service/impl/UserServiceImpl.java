@@ -1,7 +1,7 @@
 package com.user_messaging_system.user_service.service.impl;
 
 import com.user_messaging_system.core_library.exception.UnauthorizedException;
-import com.user_messaging_system.user_service.exception.UserNotFoundException;
+import com.user_messaging_system.core_library.exception.UserNotFoundException;
 import com.user_messaging_system.core_library.service.JWTService;
 import com.user_messaging_system.user_service.api.input.UserRegisterInput;
 import com.user_messaging_system.user_service.api.input.UserUpdateInput;
@@ -31,8 +31,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getCurrentUser(String jwtToken){
-        String email = tokenValidateAndExtractMail(jwtToken);
+    public UserDTO getCurrentUser(String token){
+        token = jwtService.extractToken(token);
+        jwtService.validateToken(token);
+        String email = jwtService.extractEmail(token);
         return getUserByEmail(email);
     }
 
@@ -67,8 +69,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO updateCurrentUser(String jwtToken, UserUpdateInput userUpdateInput){
-        String currentUserEmail = tokenValidateAndExtractMail(jwtToken);
+    public UserDTO updateCurrentUser(String token, UserUpdateInput userUpdateInput){
+        jwtService.validateToken(token);
+        String currentUserEmail = jwtService.extractEmail(token);
         User existingUser = findUserByEmail(currentUserEmail);
         validateUserIsNotExistByEmailAndId(userUpdateInput.email(), existingUser.getId());
         existingUser = UserMapper.INSTANCE.updateAndReturnUser(userUpdateInput, existingUser);
@@ -77,7 +80,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteCurrentUser(String jwtToken){
-        String email = tokenValidateAndExtractMail(jwtToken);
+        jwtService.validateToken(jwtToken);
+        String email = jwtService.extractEmail(jwtToken);
         User user = findUserByEmail(email);
         userRepository.delete(user);
     }
@@ -89,7 +93,7 @@ public class UserServiceImpl implements UserService {
 
     private User findUserByEmail(String email){
         return userRepository.findByEmail(email).
-                orElseThrow(() -> new UserNotFoundException("User not found"));
+                orElseThrow(() -> new com.user_messaging_system.core_library.exception.UserNotFoundException("User not found"));
     }
 
     private void validateUserIsNotExistByEmail(String email){
@@ -117,11 +121,6 @@ public class UserServiceImpl implements UserService {
         User user = UserMapper.INSTANCE.userRegisterInputToUser(userRegisterInput);
         user.getRoles().add(getRoleForUser());
         return user;
-    }
-
-    private String tokenValidateAndExtractMail(String token){
-        jwtService.validateToken(token);
-        return jwtService.extractEmail(token);
     }
 
     //TODO: throw new ile firlatilan hatayi duzelt simdilik UserNotFoundException olarak biraktim.
