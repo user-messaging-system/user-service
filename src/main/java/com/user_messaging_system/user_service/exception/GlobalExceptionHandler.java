@@ -1,6 +1,7 @@
 package com.user_messaging_system.user_service.exception;
 
 import com.user_messaging_system.core_library.response.ErrorResponse;
+import jakarta.persistence.EntityExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,7 +17,8 @@ public class GlobalExceptionHandler {
                 .message(exception.getMessage())
                 .error(exception.getCause().getMessage())
                 .status(HttpStatus.NOT_FOUND.value())
-                .path(request.getDescription(false)).build()
+                .path(request.getDescription(false))
+                .build()
             );
     }
 
@@ -26,7 +28,19 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse.Builder()
                 .message(exception.getMessage())
                 .error(exception.getCause().getMessage())
-                .status(HttpStatus.NOT_FOUND.value())
+                .status(HttpStatus.CONFLICT.value())
+                .path(request.getDescription(false))
+                .build()
+            );
+    }
+
+    @ExceptionHandler(EntityExistsException.class)
+    public ResponseEntity<ErrorResponse> handleEntityExistsException(EntityExistsException exception, WebRequest request){
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ErrorResponse.Builder()
+                .message(exception.getMessage())
+                .error(exception.getMessage())
+                .status(HttpStatus.CONFLICT.value())
                 .path(request.getDescription(false))
                 .build()
             );
