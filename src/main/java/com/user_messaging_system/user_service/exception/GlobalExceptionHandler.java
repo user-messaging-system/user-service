@@ -2,16 +2,19 @@ package com.user_messaging_system.user_service.exception;
 
 import com.user_messaging_system.core_library.response.ErrorResponse;
 import jakarta.persistence.EntityExistsException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException exception, WebRequest request){
+
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(new ErrorResponse.Builder()
                 .message(exception.getMessage())
