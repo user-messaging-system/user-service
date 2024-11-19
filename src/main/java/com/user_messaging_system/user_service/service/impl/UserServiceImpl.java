@@ -8,12 +8,12 @@ import com.user_messaging_system.user_service.api.input.UserUpdateInput;
 import com.user_messaging_system.user_service.api.output.UserRegisterOutput;
 import com.user_messaging_system.user_service.common.enumerator.Role;
 import com.user_messaging_system.user_service.dto.UserDTO;
+import com.user_messaging_system.user_service.exception.EmailAlreadyExistException;
 import com.user_messaging_system.user_service.mapper.UserMapper;
 import com.user_messaging_system.user_service.model.User;
 import com.user_messaging_system.user_service.repository.RoleRepository;
 import com.user_messaging_system.user_service.repository.UserRepository;
 import com.user_messaging_system.user_service.service.UserService;
-import jakarta.persistence.EntityExistsException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -93,18 +93,18 @@ public class UserServiceImpl implements UserService {
 
     private User findUserByEmail(String email){
         return userRepository.findByEmail(email).
-                orElseThrow(() -> new com.user_messaging_system.core_library.exception.UserNotFoundException("User not found"));
+                orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
     private void validateUserIsNotExistByEmail(String email){
         if(userRepository.existsByEmail(email)){
-            throw new EntityExistsException("This email address (" + email + ") is already in use.");
+            throw new EmailAlreadyExistException("This email address (" + email + ") is already in use.");
         }
     }
 
     private void validateUserIsNotExistByEmailAndId(String email, String id){
         if(userRepository.existsByEmailAndIdNot(email, id)){
-            throw new EntityExistsException("This email address (" + email + ") is already in use.");
+            throw new EmailAlreadyExistException("This email address (" + email + ") is already in use.");
         }
     }
 
@@ -123,12 +123,15 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
-    //TODO: throw new ile firlatilan hatayi duzelt simdilik UserNotFoundException olarak biraktim.
     private void validateUserIsAuthorizedForConversation(String currentUserId, String senderId, String receiverId){
         if(currentUserId.equals(senderId) || currentUserId.equals(receiverId)){
             return;
         }else{
-            throw new UnauthorizedException("Current user is not authorized to access this conversation.");
+            throw new UnauthorizedException(
+                "Current user (ID: " + currentUserId + ") is not authorized to access the conversation:\n" +
+                    "- Sender (ID: " + senderId + ")\n" +
+                    "- Receiver (ID: " + receiverId + ")"
+            );
         }
     }
 }
