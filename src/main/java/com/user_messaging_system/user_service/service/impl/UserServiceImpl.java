@@ -40,8 +40,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> getSenderAndReceiverByIds(String jwtToken, String senderId, String receiverId){
-        String email = jwtService.extractEmail(jwtToken);
-        User user = findUserByEmail(email);
+        String token = jwtService.extractToken(jwtToken);
+        User user = findUserById(token);
+
         validateUserIsAuthorizedForConversation(user.getId(), senderId, receiverId);
         List<User> senderAndReceiverUsers = userRepository.findAllById(List.of(senderId, receiverId));
         return UserMapper.INSTANCE.userListToUserDTOList(senderAndReceiverUsers);

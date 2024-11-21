@@ -76,7 +76,7 @@ public class UserController {
             @PathVariable String receiverId
     ){
         logger.info("[START] Method getSenderAndReceiverByIds called in UserController with parameters:" +
-                " jwtToken={}, senderId={}, receiverId={}", jwtToken, senderId, receiverId);
+                " userId={}, senderId={}, receiverId={}", jwtToken, senderId, receiverId);
 
         SuccessResponse<List<UserGetOutput>> response = SuccessResponseBuilder.buildSuccessResponse(
                 UserMapper.INSTANCE.userDtoListToUserGetOutputList(
@@ -85,7 +85,10 @@ public class UserController {
                 HttpStatus.OK
         );
 
-        logger.info("[SUCCESS] Method getSenderAndReceiverByIds in UserController completed successfully. Response: {}", response);
+        logger.info(
+                "[SUCCESS] Method getSenderAndReceiverByIds in UserController completed successfully. Response: {}",
+                response
+        );
         return ResponseEntity.ok(response);
     }
 
@@ -107,7 +110,11 @@ public class UserController {
             @RequestHeader("Authorization") String jwtToken,
             @RequestBody UserUpdateInput userUpdateInput
     ){
-        logger.info("[START] Method updateCurrentUser called in UserController with parameters: jwtToken={}, userUpdateInput={}", jwtToken, userUpdateInput);
+        logger.info(
+                "[START] Method updateCurrentUser called in UserController with parameters: jwtToken={}, userUpdateInput={}",
+                jwtToken,
+                userUpdateInput
+        );
 
         SuccessResponse<UserUpdateOutput> response = SuccessResponseBuilder.buildSuccessResponse(
                 UserMapper.INSTANCE.userDtoToUserUpdateOutput(userService.updateCurrentUser(jwtToken, userUpdateInput)),
