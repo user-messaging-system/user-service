@@ -4,6 +4,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.user_messaging_system.core_library.exception.UnauthorizedException;
 import com.user_messaging_system.core_library.exception.UserNotFoundException;
 import com.user_messaging_system.core_library.response.ErrorResponse;
+import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,6 +114,24 @@ public class GlobalExceptionHandler {
             exception.getMessage()
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new ErrorResponse.Builder()
+                .message(exception.getMessage())
+                .error(exception.getCause() != null ? exception.getCause().getMessage() : "No root cause available")
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .path(request.getDescription(false))
+                .build()
+            );
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ErrorResponse> handleJwtException(JwtException exception, WebRequest request){
+        logger.error(
+            "[ERROR] JWTException occurred. Status: {}. Path: {}. Message: {}",
+            HttpStatus.UNAUTHORIZED.value(),
+            request.getDescription(false),
+            exception.getMessage()
+        );
+       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(new ErrorResponse.Builder()
                 .message(exception.getMessage())
                 .error(exception.getCause() != null ? exception.getCause().getMessage() : "No root cause available")
