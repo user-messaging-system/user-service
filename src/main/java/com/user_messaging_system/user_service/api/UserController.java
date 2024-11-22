@@ -54,7 +54,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/currentUser")
+    @GetMapping("/me")
     public ResponseEntity<SuccessResponse<UserGetCurrentOutput>> getCurrentUser(
         @RequestHeader("Authorization") String jwtToken
     ){
@@ -92,8 +92,8 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<SuccessResponse<UserRegisterOutput>> register(@RequestBody UserRegisterInput registerInput){
+    @PostMapping
+    public ResponseEntity<SuccessResponse<UserRegisterOutput>> createUser(@RequestBody UserRegisterInput registerInput){
         logger.info("[START] Method register called in UserController with parameters: registerInput={}", registerInput);
 
         SuccessResponse<UserRegisterOutput> response = SuccessResponseBuilder.buildSuccessResponse(
@@ -105,8 +105,9 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping
-    public ResponseEntity<SuccessResponse<UserUpdateOutput>> updateCurrentUser(
+    @PutMapping("{id}")
+    public ResponseEntity<SuccessResponse<UserUpdateOutput>> updateUser(
+            @PathVariable String id,
             @RequestHeader("Authorization") String jwtToken,
             @RequestBody UserUpdateInput userUpdateInput
     ){
@@ -117,7 +118,7 @@ public class UserController {
         );
 
         SuccessResponse<UserUpdateOutput> response = SuccessResponseBuilder.buildSuccessResponse(
-                UserMapper.INSTANCE.userDtoToUserUpdateOutput(userService.updateCurrentUser(jwtToken, userUpdateInput)),
+                UserMapper.INSTANCE.userDtoToUserUpdateOutput(userService.updateUserById(id, jwtToken, userUpdateInput)),
                 HttpStatus.OK
         );
 
@@ -125,12 +126,13 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> deleteCurrentUser(@RequestHeader("Authorization") String jwtToken){
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> deleteUser(
+            @PathVariable String id,
+            @RequestHeader("Authorization") String jwtToken
+    ){
         logger.info("[START] Method deleteCurrentUser called in UserController with parameters: jwtToken={}", jwtToken);
-
-        userService.deleteCurrentUser(jwtToken);
-
+        userService.deleteUser(id, jwtToken);
         logger.info("[SUCCESS] Method deleteCurrentUser in UserController completed successfully.");
         return ResponseEntity.noContent().build();
     }

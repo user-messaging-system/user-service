@@ -13,6 +13,6 @@ public interface UserService {
     List<UserDTO> getSenderAndReceiverByIds(String jwtToken, String senderId, String receiverId);
     UserDTO getUserByEmail(String email);
     UserRegisterOutput createUser(UserRegisterInput userRegisterInput);
-    void deleteCurrentUser(String jwtToken);
-    UserDTO updateCurrentUser(String jwtToken, UserUpdateInput userUpdateInput);
+    void deleteUser(String id, String jwtToken);
+    UserDTO updateUserById(String id, String jwtToken, UserUpdateInput userUpdateInput);
 }

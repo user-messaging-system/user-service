@@ -70,20 +70,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO updateCurrentUser(String token, UserUpdateInput userUpdateInput){
+    public UserDTO updateUserById(String id, String token, UserUpdateInput userUpdateInput){
         jwtService.validateToken(token);
-        String currentUserEmail = jwtService.extractEmail(token);
-        User existingUser = findUserByEmail(currentUserEmail);
-        validateUserIsNotExistByEmailAndId(userUpdateInput.email(), existingUser.getId());
-        existingUser = UserMapper.INSTANCE.updateAndReturnUser(userUpdateInput, existingUser);
-        return UserMapper.INSTANCE.userToUserDTO(existingUser);
+        String currentUserId = jwtService.extractUserId(token);
+        validateUserAuthorization(id, currentUserId);
+        User currentUser = findUserById(currentUserId);
+        validateUserIsNotExistByEmailAndId(userUpdateInput.email(), currentUser.getId());
+        currentUser = UserMapper.INSTANCE.updateAndReturnUser(userUpdateInput, currentUser);
+        return UserMapper.INSTANCE.userToUserDTO(currentUser);
     }
 
     @Override
-    public void deleteCurrentUser(String jwtToken){
-        jwtService.validateToken(jwtToken);
-        String email = jwtService.extractEmail(jwtToken);
-        User user = findUserByEmail(email);
+    public void deleteUser(String id, String token){
+        jwtService.validateToken(token);
+        String currentUserId = jwtService.extractUserId(token);
+        validateUserAuthorization(id, currentUserId);
+        User user = findUserById(id);
         userRepository.delete(user);
     }
 
@@ -133,6 +135,12 @@ public class UserServiceImpl implements UserService {
                     "- Sender (ID: " + senderId + ")\n" +
                     "- Receiver (ID: " + receiverId + ")"
             );
+        }
+    }
+
+    private void validateUserAuthorization(String id, String currentUserId) {
+        if (!id.equals(currentUserId)) {
+            throw new UnauthorizedException("User is not authorized for this operation.");
         }
     }
 }
