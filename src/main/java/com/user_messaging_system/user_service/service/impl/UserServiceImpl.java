@@ -8,6 +8,7 @@ import com.user_messaging_system.user_service.api.input.UserUpdateInput;
 import com.user_messaging_system.user_service.api.output.UserRegisterOutput;
 import com.user_messaging_system.user_service.common.enumerator.Role;
 import com.user_messaging_system.user_service.dto.UserDTO;
+import com.user_messaging_system.user_service.dto.UserRegisterDTO;
 import com.user_messaging_system.user_service.exception.EmailAlreadyExistException;
 import com.user_messaging_system.user_service.mapper.UserMapper;
 import com.user_messaging_system.user_service.model.User;
@@ -61,12 +62,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserRegisterOutput createUser(UserRegisterInput userRegisterInput){
+    public UserRegisterDTO createUser(UserRegisterInput userRegisterInput){
         validateUserIsNotExistByEmail(userRegisterInput.email());
         User user = prepareUserForCreate(userRegisterInput);
         user = userRepository.save(user);
         String accessToken = generateTokenForNewUser(user);
-        return UserMapper.INSTANCE.userToUserOutputWithAccessToken(user, accessToken);
+        return UserMapper.INSTANCE.userToUserRegisterDTO(user, accessToken);
     }
 
     @Override

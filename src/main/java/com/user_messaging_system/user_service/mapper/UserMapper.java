@@ -8,6 +8,7 @@ import com.user_messaging_system.user_service.api.output.UserGetOutput;
 import com.user_messaging_system.user_service.api.output.UserRegisterOutput;
 import com.user_messaging_system.user_service.api.output.UserUpdateOutput;
 import com.user_messaging_system.user_service.dto.UserDTO;
+import com.user_messaging_system.user_service.dto.UserRegisterDTO;
 import com.user_messaging_system.user_service.model.Role;
 import com.user_messaging_system.user_service.model.User;
 import org.mapstruct.*;
@@ -26,7 +27,7 @@ public interface UserMapper {
 
     @Mapping(target = "roles", source = "user.roles", qualifiedByName = "mapRoles")
     @Mapping(target = "accessToken", source = "accessToken")
-    UserRegisterOutput userToUserOutputWithAccessToken(User user, String accessToken);
+    UserRegisterDTO userToUserRegisterDTO(User user, String accessToken);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "mailVerified", ignore = true)
@@ -40,6 +41,8 @@ public interface UserMapper {
     User userInputToUser(UserInput userInput);
 
     User userRegisterInputToUser(UserRegisterInput userRegisterInput);
+
+    UserRegisterOutput userRegisterDTOToUserRegisterOutput(UserRegisterDTO userRegisterDTO);
 
     List<UserDTO> userListToUserDTOList(List<User> userList);
 
