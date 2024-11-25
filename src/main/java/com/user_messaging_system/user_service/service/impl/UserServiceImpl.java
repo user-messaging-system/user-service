@@ -5,7 +5,6 @@ import com.user_messaging_system.core_library.exception.UserNotFoundException;
 import com.user_messaging_system.core_library.service.JWTService;
 import com.user_messaging_system.user_service.api.input.UserRegisterInput;
 import com.user_messaging_system.user_service.api.input.UserUpdateInput;
-import com.user_messaging_system.user_service.api.output.UserRegisterOutput;
 import com.user_messaging_system.user_service.common.enumerator.Role;
 import com.user_messaging_system.user_service.dto.UserDTO;
 import com.user_messaging_system.user_service.dto.UserRegisterDTO;
@@ -36,7 +35,7 @@ public class UserServiceImpl implements UserService {
         token = jwtService.extractToken(token);
         jwtService.validateToken(token);
         String email = jwtService.extractEmail(token);
-        return getUserByEmail(email);
+        return UserMapper.INSTANCE.userToUserDTO(findUserByEmail(email));
     }
 
     @Override
@@ -52,12 +51,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getUserById(String id){
         User user = findUserById(id);
-        return UserMapper.INSTANCE.userToUserDTO(user);
-    }
-
-    @Override
-    public UserDTO getUserByEmail(String email) {
-        User user = findUserByEmail(email);
         return UserMapper.INSTANCE.userToUserDTO(user);
     }
 
@@ -128,9 +121,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateUserIsAuthorizedForConversation(String currentUserId, String senderId, String receiverId){
-        if(currentUserId.equals(senderId) || currentUserId.equals(receiverId)){
-            return;
-        }else{
+        if(!(currentUserId.equals(senderId) || currentUserId.equals(receiverId))){
             throw new UnauthorizedException(
                 "Current user (ID: " + currentUserId + ") is not authorized to access the conversation:\n" +
                     "- Sender (ID: " + senderId + ")\n" +
