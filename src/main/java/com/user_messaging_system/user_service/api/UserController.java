@@ -32,13 +32,22 @@ public class UserController {
     @LogExecution
     @GetMapping("{id}")
     public ResponseEntity<SuccessResponse<UserGetOutput>> getById(@PathVariable(name = "id") String id) {
-        /*logger.info("[START] Method getById called in UserController with parameters: id={}", id);*/
         SuccessResponse<UserGetOutput> response = new SuccessResponse.Builder<UserGetOutput>()
                 .message(USER_SUCCESSFULLY_RETRIEVED)
                 .data(UserMapper.INSTANCE.userDtoToUserGetOutput(userService.getUserById(id)))
                 .status(HttpStatus.OK.toString())
                 .build();
-        /*logger.info("[SUCCESS] Method getById in UserController completed successfully. Response: {}", response);*/
+        return ResponseEntity.ok(response);
+    }
+
+    @LogExecution
+    @GetMapping("/by-email")
+    public ResponseEntity<SuccessResponse<UserGetOutput>> getByEmail(@RequestParam(name = "email") String email) {
+        SuccessResponse<UserGetOutput> response = new SuccessResponse.Builder<UserGetOutput>()
+                .message(USER_SUCCESSFULLY_RETRIEVED)
+                .data(UserMapper.INSTANCE.userDtoToUserGetOutput(userService.getUserByEmail(email)))
+                .status(HttpStatus.OK.toString())
+                .build();
         return ResponseEntity.ok(response);
     }
 
@@ -57,6 +66,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @LogExecution
     @GetMapping(PAIR_PATH)
     public ResponseEntity<SuccessResponse<List<UserGetOutput>>> getSenderAndReceiverByIds(
             @RequestHeader("Authorization") String jwtToken,
@@ -80,6 +90,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @LogExecution
     @PostMapping
     public ResponseEntity<SuccessResponse<UserRegisterOutput>> createUser(@RequestBody UserRegisterInput userRegisterInput){
         logger.info("[START] Method register called in UserController with parameters: registerInput={}", userRegisterInput);
@@ -93,6 +104,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @LogExecution
     @PutMapping("{id}")
     public ResponseEntity<SuccessResponse<UserUpdateOutput>> updateUser(
             @PathVariable String id,
@@ -114,6 +126,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @LogExecution
     @DeleteMapping("{id}")
     public ResponseEntity<Void> deleteUser(
             @PathVariable String id,

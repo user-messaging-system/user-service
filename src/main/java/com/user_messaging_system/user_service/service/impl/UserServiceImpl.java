@@ -55,6 +55,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDTO getUserByEmail(String email){
+        User user = findUserByEmail(email);
+        return UserMapper.INSTANCE.userToUserDTO(user);
+    }
+
+    @Override
     public UserRegisterDTO createUser(UserRegisterInput userRegisterInput){
         validateUserIsNotExistByEmail(userRegisterInput.email());
         User user = prepareUserForCreate(userRegisterInput);
