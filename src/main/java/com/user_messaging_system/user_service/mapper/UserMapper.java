@@ -3,10 +3,7 @@ package com.user_messaging_system.user_service.mapper;
 import com.user_messaging_system.user_service.api.input.UserInput;
 import com.user_messaging_system.user_service.api.input.UserRegisterInput;
 import com.user_messaging_system.user_service.api.input.UserUpdateInput;
-import com.user_messaging_system.user_service.api.output.UserGetCurrentOutput;
-import com.user_messaging_system.user_service.api.output.UserGetOutput;
-import com.user_messaging_system.user_service.api.output.UserRegisterOutput;
-import com.user_messaging_system.user_service.api.output.UserUpdateOutput;
+import com.user_messaging_system.user_service.api.output.*;
 import com.user_messaging_system.user_service.dto.UserDTO;
 import com.user_messaging_system.user_service.dto.UserRegisterDTO;
 import com.user_messaging_system.user_service.model.Role;
@@ -40,8 +37,6 @@ public interface UserMapper {
     @Mapping(target = "mailVerified", ignore = true)
     User userInputToUser(UserInput userInput);
 
-    User userRegisterInputToUser(UserRegisterInput userRegisterInput);
-
     UserRegisterOutput userRegisterDTOToUserRegisterOutput(UserRegisterDTO userRegisterDTO);
 
     List<UserDTO> userListToUserDTOList(List<User> userList);
@@ -53,6 +48,7 @@ public interface UserMapper {
     UserGetCurrentOutput userDtoToUserOutput(UserDTO userDTO);
 
     UserGetOutput userDtoToUserGetOutput(UserDTO userDTO);
+    UserAuthenticationOutput userDtoToUserAuthenticationOutput(UserDTO userDTO);
 
     UserUpdateOutput userDtoToUserUpdateOutput(UserDTO userDTO);
 

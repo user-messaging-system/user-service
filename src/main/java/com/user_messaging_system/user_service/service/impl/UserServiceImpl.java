@@ -14,6 +14,7 @@ import com.user_messaging_system.user_service.model.User;
 import com.user_messaging_system.user_service.repository.RoleRepository;
 import com.user_messaging_system.user_service.repository.UserRepository;
 import com.user_messaging_system.user_service.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,11 +24,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JWTService jwtService;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, JWTService jwtService, RoleRepository roleRepository) {
+    public UserServiceImpl(UserRepository userRepository, JWTService jwtService, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -121,7 +124,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private User prepareUserForCreate(UserRegisterInput userRegisterInput){
-        User user = UserMapper.INSTANCE.userRegisterInputToUser(userRegisterInput);
+        User user = new User();
+        user.setEmail(userRegisterInput.email());
+        user.setName(userRegisterInput.name());
+        user.setLastName(userRegisterInput.lastName());
+        user.setPassword(passwordEncoder.encode(userRegisterInput.password()));
         user.getRoles().add(getRoleForUser());
         return user;
     }
