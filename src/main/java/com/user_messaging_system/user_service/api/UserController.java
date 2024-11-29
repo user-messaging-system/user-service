@@ -91,7 +91,7 @@ public class UserController {
     @LogExecution
     @PostMapping
     public ResponseEntity<SuccessResponse<UserRegisterOutput>> createUser(
-            @RequestBody UserRegisterInput userRegisterInput
+            @Valid @RequestBody UserRegisterInput userRegisterInput
     ){
         SuccessResponse<UserRegisterOutput> response = new SuccessResponse.Builder<UserRegisterOutput>()
                 .message(USER_SUCCESSFULLY_REGISTERED)
@@ -104,7 +104,9 @@ public class UserController {
     @LogExecution
     @PutMapping("{id}")
     public ResponseEntity<SuccessResponse<UserUpdateOutput>> updateUser(
-            @Valid @Size(min = UUID_LENGTH, max = UUID_LENGTH, message = ValidationConstant.INVALID_USER_ID) @PathVariable String id,
+            @Valid
+            @Size(min = UUID_LENGTH, max = UUID_LENGTH, message = ValidationConstant.INVALID_USER_ID)
+            @PathVariable String id,
             @RequestHeader("Authorization") String jwtToken,
             @RequestBody UserUpdateInput userUpdateInput
     ){
@@ -119,7 +121,9 @@ public class UserController {
     @LogExecution
     @DeleteMapping("{id}")
     public ResponseEntity<Void> deleteUser(
-            @Valid @Size(min = UUID_LENGTH, max = UUID_LENGTH, message = ValidationConstant.INVALID_USER_ID) @PathVariable String id,
+            @Valid
+            @Size(min = UUID_LENGTH, max = UUID_LENGTH, message = ValidationConstant.INVALID_USER_ID)
+            @PathVariable String id,
             @RequestHeader("Authorization") String jwtToken
     ){
         userService.deleteUser(id, jwtToken);

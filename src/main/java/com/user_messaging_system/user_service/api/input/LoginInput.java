@@ -8,12 +8,12 @@ import static com.user_messaging_system.core_library.common.constant.ValidationC
 
 @Validated
 public record LoginInput(
-        @NotBlank
+        @NotBlank(message = EMAIL_NOT_BLANK)
         @Email(message = INVALID_EMAIL)
         @Size(min = EMAIL_MIN_LENGTH, max = EMAIL_MAX_LENGTH, message = INVALID_EMAIL)
         String email,
 
-        @NotBlank
+        @NotBlank(message = PASSWORD_NOT_BLANK)
         @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH, message = INVALID_PASSWORD)
         String password
 ) {}
