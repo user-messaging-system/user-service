@@ -42,10 +42,17 @@ public class GlobalExceptionHandler {
         MethodArgumentNotValidException exception,
         WebRequest request
     ){
+        List<String> errorMessages = exception.getBindingResult().getFieldErrors().stream()
+                .map(fieldError ->
+                        String.format("Field '%s': %s", fieldError.getField(), fieldError.getDefaultMessage())
+                )
+                .toList();
+
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(new ErrorResponse.Builder()
-                .message(exception.getMessage())
-                .errors(List.of(exception.getCause() != null ? exception.getCause().getMessage() : NO_ROOT_CAUSE_AVAILABLE))
+                .message("Input validation error. Please check the provided data.")
+                .errors(errorMessages)
                 .status(HttpStatus.BAD_REQUEST.value())
                 .path(request.getDescription(false))
                 .build()
