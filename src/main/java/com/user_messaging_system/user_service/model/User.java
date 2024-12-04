@@ -9,11 +9,9 @@ import java.util.List;
 @Table(name = "USER")
 public class User extends BaseModel {
 
-    @ManyToMany(
-        fetch = FetchType.EAGER,
-        cascade = CascadeType.ALL,
-        targetEntity = Role.class
-    )
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {
+            CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH
+    })
     @JoinTable(
         name = "USER_ROLE",
         joinColumns = @JoinColumn(

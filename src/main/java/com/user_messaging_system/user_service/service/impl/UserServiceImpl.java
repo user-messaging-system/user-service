@@ -18,6 +18,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -25,20 +28,27 @@ public class UserServiceImpl implements UserService {
     private final JWTService jwtService;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository, JWTService jwtService, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(
+            UserRepository userRepository,
+            JWTService jwtService,
+            RoleRepository roleRepository,
+            PasswordEncoder passwordEncoder,
+            UserMapper userMapper
+    ) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
     }
 
     @Override
     public UserDTO getCurrentUser(String token){
-        token = jwtService.extractToken(token);
         jwtService.validateToken(token);
         String email = jwtService.extractEmail(token);
-        return UserMapper.INSTANCE.userToUserDTO(findUserByEmail(email));
+        return userMapper.userToUserDTO(findUserByEmail(email));
     }
 
     @Override
@@ -48,19 +58,21 @@ public class UserServiceImpl implements UserService {
 
         validateUserIsAuthorizedForConversation(user.getId(), senderId, receiverId);
         List<User> senderAndReceiverUsers = userRepository.findAllById(List.of(senderId, receiverId));
-        return UserMapper.INSTANCE.userListToUserDTOList(senderAndReceiverUsers);
+        return userMapper.userListToUserDTOList(senderAndReceiverUsers);
     }
 
     @Override
     public UserDTO getUserById(String id){
+        validateUUIDFormatAndNotBlank(id);
         User user = findUserById(id);
-        return UserMapper.INSTANCE.userToUserDTO(user);
+        return userMapper.userToUserDTO(user);
     }
 
     @Override
     public UserDTO getUserByEmail(String email){
+        validateEmailFormatAndNotBlank(email);
         User user = findUserByEmail(email);
-        return UserMapper.INSTANCE.userToUserDTO(user);
+        return userMapper.userToUserDTO(user);
     }
 
     @Override
@@ -69,7 +81,7 @@ public class UserServiceImpl implements UserService {
         User user = prepareUserForCreate(userRegisterInput);
         user = userRepository.save(user);
         String accessToken = generateTokenForNewUser(user);
-        return UserMapper.INSTANCE.userToUserRegisterDTO(user, accessToken);
+        return userMapper.userToUserRegisterDTO(user, accessToken);
     }
 
     @Override
@@ -79,8 +91,8 @@ public class UserServiceImpl implements UserService {
         validateUserAuthorization(id, currentUserId);
         User currentUser = findUserById(currentUserId);
         validateUserIsNotExistByEmailAndId(userUpdateInput.email(), currentUser.getId());
-        currentUser = UserMapper.INSTANCE.updateAndReturnUser(userUpdateInput, currentUser);
-        return UserMapper.INSTANCE.userToUserDTO(currentUser);
+        currentUser = userMapper.updateAndReturnUser(userUpdateInput, currentUser);
+        return userMapper.userToUserDTO(currentUser);
     }
 
     @Override
@@ -146,6 +158,30 @@ public class UserServiceImpl implements UserService {
     private void validateUserAuthorization(String id, String currentUserId) {
         if (!id.equals(currentUserId)) {
             throw new UnauthorizedException("User is not authorized for this operation.");
+        }
+    }
+
+    private void validateUUIDFormatAndNotBlank(String id){
+        if(Objects.isNull(id) || id.isBlank()){
+            throw new IllegalArgumentException("Id is not a valid UUID.");
+        }
+
+        try{
+            UUID.fromString(id);
+        }catch (IllegalArgumentException ex){
+            throw new IllegalArgumentException("Invalid UUID");
+        }
+    }
+
+    private void validateEmailFormatAndNotBlank(String email){
+        String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+
+        if(Objects.isNull(email) || email.isBlank()){
+            throw new IllegalArgumentException("Email address is blank.");
+        }
+
+        if (!Pattern.matches(EMAIL_REGEX, email)) {
+            throw new IllegalArgumentException("Invalid email address.");
         }
     }
 }

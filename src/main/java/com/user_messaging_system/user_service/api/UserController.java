@@ -23,9 +23,11 @@ import static com.user_messaging_system.core_library.common.constant.ValidationC
 @RequestMapping(USER_SERVICE_BASE_URL)
 public class UserController {
     private final UserService userService;
+    private final UserMapper userMapper;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @LogExecution
@@ -37,7 +39,7 @@ public class UserController {
     ) {
         SuccessResponse<UserGetOutput> response = new SuccessResponse.Builder<UserGetOutput>()
                 .message(USER_SUCCESSFULLY_RETRIEVED)
-                .data(UserMapper.INSTANCE.userDtoToUserGetOutput(userService.getUserById(id)))
+                .data(userMapper.userDtoToUserGetOutput(userService.getUserById(id)))
                 .status(HttpStatus.OK.toString())
                 .build();
         return ResponseEntity.ok(response);
@@ -52,7 +54,7 @@ public class UserController {
     ) {
         SuccessResponse<UserAuthenticationOutput> response = new SuccessResponse.Builder<UserAuthenticationOutput>()
                 .message(USER_SUCCESSFULLY_RETRIEVED)
-                .data(UserMapper.INSTANCE.userDtoToUserAuthenticationOutput(userService.getUserByEmail(email)))
+                .data(userMapper.userDtoToUserAuthenticationOutput(userService.getUserByEmail(email)))
                 .status(HttpStatus.OK.toString())
                 .build();
         return ResponseEntity.ok(response);
@@ -61,11 +63,11 @@ public class UserController {
     @LogExecution
     @GetMapping(CURRENT_USER_PATH)
     public ResponseEntity<SuccessResponse<UserGetCurrentOutput>> getCurrentUser(
-        @RequestHeader("Authorization") String jwtToken
+            @CookieValue("accessToken") String jwtToken
     ){
         SuccessResponse<UserGetCurrentOutput> response = new SuccessResponse.Builder<UserGetCurrentOutput>()
                 .message(USER_SUCCESSFULLY_RETRIEVED)
-                .data(UserMapper.INSTANCE.userDtoToUserOutput(userService.getCurrentUser(jwtToken)))
+                .data(userMapper.userDtoToUserOutput(userService.getCurrentUser(jwtToken)))
                 .status(HttpStatus.OK.toString())
                 .build();
         return ResponseEntity.ok(response);
@@ -80,7 +82,7 @@ public class UserController {
     ){
         SuccessResponse<List<UserGetOutput>> response = new SuccessResponse.Builder<List<UserGetOutput>>()
                 .message(USERS_SUCCESSFULLY_RETRIEVED)
-                .data(UserMapper.INSTANCE.userDtoListToUserGetOutputList(
+                .data(userMapper.userDtoListToUserGetOutputList(
                         userService.getSenderAndReceiverByIds(jwtToken, senderId, receiverId)
                 ))
                 .status(HttpStatus.OK.toString())
@@ -95,7 +97,7 @@ public class UserController {
     ){
         SuccessResponse<UserRegisterOutput> response = new SuccessResponse.Builder<UserRegisterOutput>()
                 .message(USER_SUCCESSFULLY_REGISTERED)
-                .data(UserMapper.INSTANCE.userRegisterDTOToUserRegisterOutput(userService.createUser(userRegisterInput)))
+                .data(userMapper.userRegisterDTOToUserRegisterOutput(userService.createUser(userRegisterInput)))
                 .status(HttpStatus.CREATED.toString())
                 .build();
         return ResponseEntity.ok(response);
@@ -112,7 +114,7 @@ public class UserController {
     ){
         SuccessResponse<UserUpdateOutput> response = new SuccessResponse.Builder<UserUpdateOutput>()
                 .message(USER_SUCCESSFULLY_UPDATED)
-                .data(UserMapper.INSTANCE.userDtoToUserUpdateOutput(userService.updateUserById(id, jwtToken, userUpdateInput)))
+                .data(userMapper.userDtoToUserUpdateOutput(userService.updateUserById(id, jwtToken, userUpdateInput)))
                 .status(HttpStatus.OK.toString())
                 .build();
         return ResponseEntity.ok(response);

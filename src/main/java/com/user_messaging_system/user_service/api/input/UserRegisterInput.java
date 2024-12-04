@@ -12,13 +12,16 @@ public record UserRegisterInput(
         @NotBlank(message = NAME_NOT_BLANK)
         @Size(min = NAME_MIN_LENGTH, max = NAME_MAX_LENGTH, message = INVALID_NAME)
         String name,
+
         @NotBlank(message = LAST_NAME_NOT_BLANK)
         @Size(min = LASTNAME_MIN_LENGTH, max = LASTNAME_MAX_LENGTH, message = INVALID_LAST_NAME)
         String lastName,
+
         @NotBlank(message = EMAIL_NOT_BLANK)
         @Email(message = INVALID_EMAIL)
         @Size(min = EMAIL_MIN_LENGTH, max = EMAIL_MAX_LENGTH, message = INVALID_EMAIL)
         String email,
+
         @NotBlank(message = PASSWORD_NOT_BLANK)
         @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH, message = INVALID_PASSWORD)
         String password

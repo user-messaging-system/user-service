@@ -7,14 +7,11 @@ import com.user_messaging_system.user_service.dto.UserRegisterDTO;
 import com.user_messaging_system.user_service.model.Role;
 import com.user_messaging_system.user_service.model.User;
 import org.mapstruct.*;
-import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
-
     @Mapping(target = "roles", source = "roles", qualifiedByName = "mapRoles")
     UserGetCurrentOutput userToUserOutput(User user);
 
