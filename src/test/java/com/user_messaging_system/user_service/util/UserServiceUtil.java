@@ -1,7 +1,7 @@
 package com.user_messaging_system.user_service.util;
 
 import com.user_messaging_system.user_service.api.input.UserRegisterInput;
-import com.user_messaging_system.user_service.constant.RoleTestContant;
+import com.user_messaging_system.user_service.constant.RoleTestConstant;
 import com.user_messaging_system.user_service.constant.UserTestConstant;
 import com.user_messaging_system.user_service.dto.UserDTO;
 import com.user_messaging_system.user_service.model.BaseModel;
@@ -11,7 +11,7 @@ import com.user_messaging_system.user_service.model.User;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import static com.user_messaging_system.user_service.constant.RoleTestContant.*;
+import static com.user_messaging_system.user_service.constant.RoleTestConstant.*;
 import static com.user_messaging_system.user_service.constant.UserTestConstant.*;
 
 public final class UserServiceUtil {
@@ -60,7 +60,7 @@ public final class UserServiceUtil {
 
         Field idField = BaseModel.class.getDeclaredField("id");
         idField.setAccessible(true);
-        idField.set(role, RoleTestContant.ID);
+        idField.set(role, RoleTestConstant.ID);
         return role;
     }
 }
